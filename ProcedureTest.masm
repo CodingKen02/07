@@ -1,0 +1,191 @@
+$include Procedure.h
+@START
+0;JMP
+(HALT)
+$halt
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+@0
+(START)
+// Base address of output array
+@16
+$pushA
+// number of cubes
+@10
+$pushA
+// Generate cube list
+// call CubeList function with 2 arguments
+$procedureCall 2 CubeList
+$popAD
+// Halt with empty stack
+//$halt
+@HALT
+0;JMP
+// write list of the first n cubes
+// Arguments are ptr, ncubes
+=CubeList.arg.ptr 0
+=CubeList.arg.ncubes 1
+=CubeList.lcl.i 0
+(CubeList)
+$pushFrame 2 1
+// local variable is the iterator
+D=1
+$setLocal CubeList.lcl.i
+(CubeList.LOOP)
+// compute i^3
+$getLocal CubeList.lcl.i
+$pushD
+$procedureCall 1 Cube
+$getArgument CubeList.arg.ptr
+$pushD
+$setPTR
+// ptr = ptr + 1
+$getArgument CubeList.arg.ptr
+D=D+1
+$setArgument CubeList.arg.ptr
+// i = i + 1
+$getLocal CubeList.lcl.i
+D=D+1
+$setLocal CubeList.lcl.i
+// push i
+$pushD
+// push n
+$getArgument CubeList.arg.ncubes
+$pushD
+$sub
+$popAD
+// loop if i < n
+@CubeList.LOOP
+D;JLT
+// finished loop, pop frame and return
+$popFrame 2 1
+$return
+
+// cube top of stack
+(Cube)
+// Push frame saves the state of the caller and sets up pointers
+// for the accessing the single argument (we can't pop it off because
+// the return address is in the way!)
+$pushFrame 1 0
+$getArgument 0
+// Push the value to be cubed on the stack three times
+// x, x
+$pushD
+$pushD
+$procedureCall 2 Mult
+// x^2 on stack already
+// push x
+$getArgument 0
+$pushD
+$procedureCall 2 Mult
+$popAD
+// get x^3 from stack and save in argument 0
+// (return value)
+$setArgument 0
+// pop frame and return
+$popFrame 1 0
+$return
+
+// Mutliplication procedure
+(Mult)
+=Mult.arg.x 0
+=Mult.arg.y 1
+=Mult.lcl.xmul 0
+=Mult.lcl.bit 1
+// Two arguments and two local variables
+$pushFrame 2 2
+// Get first argument and put it in the first local variable
+$getArgument Mult.arg.x // x input
+$setLocal Mult.lcl.xmul // save to multiply by 2
+// Set the first argument to zero, this will be the returned product
+// after summing partial products
+D=0
+$setArgument Mult.arg.x // sum result
+// Set the second local variable to 1 (this is bit)
+D=1
+$setLocal Mult.lcl.bit // bit
+// Now loop to do the multiplication
+(Mult.LOOP)
+// get current bit
+// push the bit local onto stack
+$getLocal Mult.lcl.bit // bit
+$pushD
+// get second argument onto stack
+$getArgument Mult.arg.y // y input
+$pushD
+// Do logical and
+$and
+// Pop the result
+$popAD
+// If the result is zero, then skip adding
+@Mult.SKIP
+D;JEQ
+// push local variable the first argument multiplied by 2^i
+$getLocal 0 // x*2^i
+$pushD
+// Get the current partial sum and push
+$getArgument 0 // read partial sum
+$pushD
+// Sum = sum + partialproduct
+$add
+// Get result and put it in the return slot
+$popAD
+$setArgument 0 // write partial sum
+(Mult.SKIP)
+// Now the first argument by 2
+$getLocal 0 // get x argument and multiply by 2
+// Double since D and A both loaded
+D=D+A
+$setLocal 0 // write out x argument so that x*2^i
+// Now multipy the bit by two
+$getLocal 1 // read bit
+D=D+A
+$setLocal 1 // write bit=bit+bit
+// D still should be set from setLocal
+// Now form mask for all bits that will be searched next
+D=D-1
+D=!D
+// Push this on the stack
+$pushD
+// Push the second argument onto the stack
+$getArgument 1 // get y argument
+$pushD
+// Do Logical And
+$and
+$popAD
+// If this is not equal to zero, still have more to do
+@Mult.LOOP
+D;JNE
+// Now we are done, pop the frame (free locals and restore pointers)
+$popFrame 2 2
+// return to caller
+$return

@@ -1,0 +1,26 @@
+$include Procedure.h
+// Push argument on stack
+@12
+D=A
+$pushD
+// Call Double procedure (1 argument)
+$procedureCall 1 Double
+// Pop result of procedure off of stack
+$popAD
+// Store Result in R15
+@R15
+M=D
+// Halt with empty stack
+$halt
+// Definition of procedure Double
+(Double)
+// This procedure directly modifies the argument avoiding the stack frame
+@SP
+// compute address of argument is SP+2
+A=M+1 
+A=A+1
+// Double the memory location by adding to itself
+D=M
+M=D+M
+// Now return
+$return

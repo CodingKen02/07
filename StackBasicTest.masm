@@ -1,0 +1,29 @@
+$include Stack.h
+// push 1 on the stack using pushD
+@1
+D=A
+$pushD
+// Push 42 on the stack
+@42
+$pushA
+// Push 32 on the stack
+@32
+$pushA
+// Pop 32 off of stack and save D in R15
+$popAD
+@R15
+M=D
+// Pop 42 off of stack and save A in R14
+$popAD
+D=A
+@R14
+M=D
+// Pop 1 off of stack and ave D in R13
+$popAD
+@R13
+M=D
+// End of test
+(HALT)
+@HALT
+0;JMP
+

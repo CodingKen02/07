@@ -1,0 +1,90 @@
+$include Stack.h
+
+// Setup Stack pointer
+@255
+D=A
+@SP
+M=D
+// Push a -1 Sentinel on the stack
+D=-1
+$pushD
+// Now set the base pointer for arguments
+@SP
+D=M
+@ARG
+M=D
+// Push two arguments on the stack
+@1
+$pushA
+@2
+$pushA
+// Now get base pointer for Local variabes
+@SP
+D=M
+@LCL
+M=D
+// Push two loal variables onto the stack
+@3
+$pushA
+@4
+$pushA
+// Now push the local variables onto the stack using the pushLocal arguments
+$getLocal 1
+$pushD
+$getLocal 0
+$pushD
+// Now push the arguments onto the stack
+$getArgument 1
+$pushD
+$getArgument 0
+$pushD
+// Now set the locals to be different values using push pop construct
+@5
+D=A
+$setLocal 1
+@6
+D=A
+$setLocal 0
+// Now set the arguments to be different values using push pop construct
+@7
+D=A
+$setArgument 1
+@8
+D=A
+$setArgument 0
+// Now pop off the stack and store it at addresses starting at 16
+@16
+D=A
+// THAT is a pointer to the array where we are saving stack
+@THAT
+M=D
+// Loop back here to pop another item off of the stack
+(LOOP)
+@THAT
+D=M
+$pushD
+$setPTR
+$popAD
+// If poped data is -1 then jump to HALT
+@HALT
+D+1;JEQ
+// Otherwise store at THAT pointer
+$pushD
+@THAT
+M=M+1
+// Jump Back To Loop
+@LOOP
+0;JMP
+// Jump here to terminate
+(HALT)
+@16
+$pushA
+$getPTR
+$popAD
+@SKIP
+D-1;JEQ
+$pushD
+@SKIP
+(SKIP)
+0;JMP
+
